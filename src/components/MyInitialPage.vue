@@ -6,6 +6,7 @@ export default {
   data() {
     return {
       password: '',
+      tempPass: '',
       options: {
         number: false,
         uppercase: false,
@@ -16,15 +17,32 @@ export default {
     }
   },
   methods: {
-    generatePassword() {
+    generatePassword() {    
       if (this.value < 4) return;
+      
+      const pass = (uuidv4() + '').replaceAll('-', '');
+      
       if (this.options.number) {
-        const pass = uuidv4() + '';
-        this.password = pass.replace(/\D/g,'').substring(0, this.value)
-        if (this.findEquals(this.password)) this.generatePassword()
+        this.password = pass.replace(/\D/g,'').substring(0, this.value);
+        if (this.findEquals(this.password)) this.generatePassword();
+        if (this.password.length + this.tempPass.length < this.value) {
+          this.tempPass = this.password;
+          this.generatePassword();
+        }
+        if (this.tempPass.length > 0) {
+          this.password = this.tempPass + this.password
+          this.password = this.password.substring(0, this.value);
+          this.tempPass = ''
+        }
         return;
       }
-      if (this.options.uppercase) {}
+      if (this.options.uppercase) {
+        this.password = pass.substring(0, this.value);
+        if (this.findEquals(this.password)) this.generatePassword();
+        this.toUpperCase(this.password);
+        return;
+      }
+      this.password = pass.substring(0, this.value);
     },
     
     findEquals(pass = '') {
@@ -32,6 +50,16 @@ export default {
         const element = pass[index];
         if (element === pass[index + 1]) return true;
       }
+      return false;
+    },
+    toUpperCase(pass = '') {
+      pass = pass.split('');
+      for (let index = 0; index < pass.length / 2; index++) {
+        const position = Math.floor(Math.random() * this.value);
+        if (!isNaN(pass.at(position))) continue;
+        pass[position] = pass.at(position).toUpperCase()
+      }
+      this.password = pass.join().replaceAll(',', '');
     },
     resetOptionUpperAndSpecial() {
       this.options.special = false;
@@ -55,7 +83,8 @@ export default {
         type="number" 
         step="1" 
         min="4" 
-        max="24">
+        max="24"
+        @change="generatePassword">
       </v-text-field>
     </v-col>
   </v-row>

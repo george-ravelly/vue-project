@@ -1,4 +1,5 @@
 <script>
+import { v4 as uuidv4 } from 'uuid';
 
 export default {
   props: ['title'],
@@ -18,13 +19,19 @@ export default {
     generatePassword() {
       if (this.value < 4) return;
       if (this.options.number) {
-        let min = Math.ceil(this.value);
-        let max = Math.floor(this.max);
-        this.password = Math.floor(Math.random() * (max - min) + min);
-        console.log(this.password);
+        const pass = uuidv4() + '';
+        this.password = pass.replace(/\D/g,'').substring(0, this.value)
+        if (this.findEquals(this.password)) this.generatePassword()
         return;
       }
       if (this.options.uppercase) {}
+    },
+    
+    findEquals(pass = '') {
+      for (let index = 0; index < pass.length; index++) {
+        const element = pass[index];
+        if (element === pass[index + 1]) return true;
+      }
     },
     resetOptionUpperAndSpecial() {
       this.options.special = false;
